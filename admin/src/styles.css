@@ -1,0 +1,73 @@
+.admin {
+  min-height: 100vh;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+  background: var(--color-bg-default);
+  font-family: var(--font-family);
+}
+
+.admin-login {
+  max-width: 360px;
+  margin: 120px auto 0;
+  padding: 28px;
+  border: 1px solid var(--color-bg-stripe);
+  border-radius: 12px;
+  background: var(--color-bg-default);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.admin-header {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.admin-table {
+  border: 1px solid var(--color-bg-stripe);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.admin-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1.4fr 1.8fr 2.4fr 1.3fr auto;
+  align-items: center;
+  border-bottom: 1px solid var(--color-bg-stripe);
+}
+
+.admin-grid > * {
+  min-width: 0;
+  padding: 10px 12px;
+  border-left: 1px solid var(--color-bg-stripe);
+}
+
+.admin-grid > *:first-child {
+  border-left: none;
+}
+
+.admin-grid--head {
+  background: var(--color-bg-stripe);
+}
+
+.admin-grid--head > * {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.admin-actions {
+  display: flex;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.admin-date {
+  white-space: nowrap;
+}
+
+.admin-add {
+  margin-top: 20px;
+}

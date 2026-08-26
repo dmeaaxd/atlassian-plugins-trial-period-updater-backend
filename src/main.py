@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from src.api import main_router
+from src.config import app_config
 from src.database import migrate
 
 
@@ -27,3 +28,10 @@ app.add_middleware(
 
 app.include_router(main_router)
 app.mount("/icons", StaticFiles(directory="icons"), name="icons")
+# Админка (React + consta) раздаётся по скрытому пути; API-роуты выше
+# зарегистрированы раньше и имеют приоритет над mount
+app.mount(
+    app_config.ADMIN_PATH,
+    StaticFiles(directory="admin-dist", html=True),
+    name="admin",
+)

@@ -8,6 +8,7 @@ class PluginResponse(BaseModel):
     type: str
     image_hard_path: str
     api_key: str
+    updated_at: datetime | None
 
 
     class Config:

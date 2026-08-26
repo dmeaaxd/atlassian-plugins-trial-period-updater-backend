@@ -2,7 +2,6 @@ from datetime import datetime, timezone
 from typing import Annotated, List
 
 from fastapi import APIRouter, Depends, Header, HTTPException
-from fastapi.responses import FileResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -25,9 +24,9 @@ def now_utc() -> datetime:
     return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
-@admin_router.get("")
-async def admin_page():
-    return FileResponse("src/admin.html")
+# Ключ всегда хранится одной строкой — переносы вырезаются при сохранении
+def normalize_key(key: str) -> str:
+    return key.replace("\r", "").replace("\n", "")
 
 
 @admin_router.get(
@@ -52,7 +51,7 @@ async def create_plugin(payload: PluginCreate, session: SessionDep):
         name=payload.name,
         type=payload.type.upper(),
         image_hard_path=payload.image_hard_path,
-        api_key=payload.api_key,
+        api_key=normalize_key(payload.api_key),
         updated_at=now_utc(),
     )
     session.add(plugin)
@@ -73,6 +72,8 @@ async def update_plugin(plugin_id: int, payload: PluginUpdate, session: SessionD
     data = payload.model_dump(exclude_unset=True)
     if "type" in data:
         data["type"] = data["type"].upper()
+    if "api_key" in data:
+        data["api_key"] = normalize_key(data["api_key"])
     for field, value in data.items():
         setattr(plugin, field, value)
     plugin.updated_at = now_utc()
