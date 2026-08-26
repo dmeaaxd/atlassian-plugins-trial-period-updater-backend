@@ -1,0 +1,50 @@
+name: Deploy backend
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-backend
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to server
+        env:
+          SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          install -m 700 -d "$HOME/.ssh"
+          printf '%s\n' "$SSH_KEY" > "$HOME/.ssh/deploy_key"
+          chmod 600 "$HOME/.ssh/deploy_key"
+          SSH="ssh -i $HOME/.ssh/deploy_key -o StrictHostKeyChecking=accept-new -o ConnectTimeout=20"
+          DEST="deploy@72.56.97.157"
+          APP_DIR=/opt/licenses/backend
+
+          # Server-only файлы (.env, docker-compose.override.yml) и database.db
+          # (живая БД с правками из админки) НЕ трогаем.
+          rsync -az --delete \
+            --exclude '.git/' \
+            --exclude 'node_modules/' \
+            --exclude 'dist/' \
+            --exclude '.venv/' \
+            --exclude '.env' \
+            --exclude 'docker-compose.override.yml' \
+            --exclude 'database.db' \
+            --exclude '.idea/' \
+            --exclude '.mimocode/' \
+            --exclude '.DS_Store' \
+            -e "$SSH" \
+            ./ "$DEST:$APP_DIR/"
+
+          $SSH "$DEST" "cd $APP_DIR && docker compose up -d --build"
+
+          code=$($SSH "$DEST" "curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8000/ || echo DOWN")
+          echo "http://127.0.0.1:8000/ -> $code"
+          [ "$code" != "DOWN" ] || { echo "Бэкенд не отвечает"; exit 1; }
